@@ -1,9 +1,8 @@
 package com.notes_api.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -14,6 +13,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -27,7 +28,8 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false, nullable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.REMOVE)
