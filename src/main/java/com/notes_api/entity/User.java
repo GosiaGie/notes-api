@@ -28,7 +28,7 @@ public class User {
     private String password;
 
     @Column(name = "created_at")
-    private LocalDateTime createDateTime;
+    private LocalDateTime createdAt;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.REMOVE)
     private Set<Item> items;
