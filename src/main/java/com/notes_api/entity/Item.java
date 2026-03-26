@@ -45,7 +45,7 @@ public class Item {
     private boolean isDeleted;
 
     @Column(name = "created_at")
-    private LocalDateTime createDateTime;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updateDateTime;
