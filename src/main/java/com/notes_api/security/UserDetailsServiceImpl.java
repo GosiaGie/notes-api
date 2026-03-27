@@ -26,7 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         var user = userRepository.findByLogin(username).orElseThrow();
 
         return UserPrincipal.builder()
-                .userID(user.getId())
+                .id(user.getId())
                 .login(user.getLogin())
                 .password(user.getPassword())
                 .authorities(List.of(new SimpleGrantedAuthority("USER"))) //only for recruitments task purpose!

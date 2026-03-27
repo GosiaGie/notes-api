@@ -14,7 +14,7 @@ import java.util.UUID;
 @Builder
 public class UserPrincipal implements UserDetails {
 
-    private final UUID userID;
+    private final UUID id;
     private final String login;
     @JsonIgnore
     private final String password;
