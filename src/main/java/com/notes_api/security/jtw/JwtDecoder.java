@@ -1,4 +1,4 @@
-package com.notes_api.security;
+package com.notes_api.security.jtw;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
