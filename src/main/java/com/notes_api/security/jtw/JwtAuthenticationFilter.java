@@ -1,5 +1,6 @@
-package com.notes_api.security;
+package com.notes_api.security.jtw;
 
+import com.notes_api.security.UserPrincipalAuthenticationToken;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
