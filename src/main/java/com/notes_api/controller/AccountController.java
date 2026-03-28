@@ -26,7 +26,7 @@ public class AccountController {
         this.loginService = loginService;
     }
 
-    @PostMapping("auth/register")
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
 
@@ -34,7 +34,7 @@ public class AccountController {
 
     }
 
-    @PostMapping("auth/login")
+    @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
 
