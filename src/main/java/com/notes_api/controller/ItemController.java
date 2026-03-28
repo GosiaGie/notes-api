@@ -1,0 +1,51 @@
+package com.notes_api.controller;
+
+import com.notes_api.item.ItemService;
+import com.notes_api.item.history.ItemHistoryResponse;
+import com.notes_api.item.patch.PatchItemRequest;
+import com.notes_api.item.patch.PatchItemResponse;
+import com.notes_api.item.post.PostItemRequest;
+import com.notes_api.item.post.PostItemResponse;
+import com.notes_api.security.UserPrincipal;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+public class ItemController {
+
+    private final ItemService itemService;
+
+    @Autowired
+    public ItemController(ItemService itemService) {
+        this.itemService = itemService;
+    }
+
+    @PostMapping("/items")
+    @ResponseStatus(HttpStatus.CREATED)
+    public PostItemResponse postItem(@Valid @RequestBody PostItemRequest request,
+                                     @AuthenticationPrincipal UserPrincipal user) {
+
+        return itemService.postItem(request, user);
+
+    }
+
+    @PatchMapping("/items/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public PatchItemResponse patchItem(@PathVariable UUID id, @Valid @RequestBody PatchItemRequest request,
+                                       @AuthenticationPrincipal UserPrincipal user) {
+
+        return itemService.patchItem(id, request, user);
+    }
+
+    @GetMapping("/items/{id}/history")
+    @ResponseStatus(HttpStatus.OK)
+    public ItemHistoryResponse history(@PathVariable UUID id, @AuthenticationPrincipal UserPrincipal user) {
+        return itemService.getItemHistory(id, user);
+    }
+
+}
