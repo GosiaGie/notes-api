@@ -1,15 +1,15 @@
 package com.notes_api.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
 import java.sql.Types;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,17 +19,20 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@ToString
 public class Item {
 
     @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)", updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false)
     private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "owner_id")
     @NotAudited
-    private User user;
+    private User owner;
 
     @Column(name = "title")
     private String title;
@@ -38,17 +41,20 @@ public class Item {
     private String content;
 
     @Column(name = "version")
-    private Integer version;
+    @Version
+    private Long version;
 
     @Column(name = "deleted")
     @JdbcTypeCode(Types.TINYINT)
     private boolean isDeleted;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP", updatable = false, nullable = false)
+    @CreationTimestamp
+    private Instant createdAt;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updateDateTime;
+    @UpdateTimestamp
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP")
+    private Instant updatedAt;
 
     @NotAudited
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "note", cascade = CascadeType.REMOVE)
