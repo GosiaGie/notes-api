@@ -24,14 +24,14 @@ public class JwtIssuer {
         this.dateTime = dateTime;
     }
 
-    public String issue(UUID id, String email, List<String> roles) {
+    public String issue(UUID id, String login, List<String> roles) {
         return JWT.create()
                 .withSubject(String.valueOf(id))
                 .withExpiresAt(dateTime.getDateTime().plus(Duration.of(jwtProperties.getExpirationMinutes(),
                         ChronoUnit.MINUTES))
                         .atZone(ZoneId.systemDefault())
                         .toInstant())
-                .withClaim("email", email)
+                .withClaim("login", login)
                 .withClaim("roles", roles)
                 .sign(Algorithm.HMAC256(jwtProperties.getSecretKey()));
     }
