@@ -101,18 +101,13 @@ public class ItemService {
     @Transactional
     public PatchItemResponse patchItem(UUID id, PatchItemRequest request, UserPrincipal userPrincipal) {
 
-        User user = User
-                .builder()
-                .id(userPrincipal.getId())
-                .build();
-
         Item item = itemRepository.findById(id)
                 .filter(i -> !i.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("item not found"));
 
-        if (!item.getOwner().getId().equals(user.getId())) {
+        if (!item.getOwner().getId().equals(userPrincipal.getId())) {
             boolean hasEditorRole = item.getPermissions().stream()
-                    .anyMatch(p -> p.getUser().getId().equals(user.getId()) && p.getRole() == Role.EDITOR);
+                    .anyMatch(p -> p.getUser().getId().equals(userPrincipal.getId()) && p.getRole() == Role.EDITOR);
 
             if (!hasEditorRole) {
                 throw new AccessDeniedException("access denied");
@@ -137,6 +132,20 @@ public class ItemService {
                 .updatedAt(dateTime.toLocalDateTime(updatedItem.getUpdatedAt()))
                 .build();
 
+    }
+
+    @Transactional
+    public void deleteItem(UUID itemId, UserPrincipal userPrincipal) {
+
+        Item item = itemRepository.findById(itemId)
+                .filter(i -> !i.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("item not found"));
+
+        if (!item.getOwner().getId().equals(userPrincipal.getId())) {
+            throw new AccessDeniedException("you don't have access to delete this note");
+        }
+
+        item.setDeleted(true);
     }
 
     @Transactional

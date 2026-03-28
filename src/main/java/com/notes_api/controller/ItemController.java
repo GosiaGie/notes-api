@@ -57,4 +57,10 @@ public class ItemController {
         return itemService.getItemHistory(id, user);
     }
 
+    @DeleteMapping("/items/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable UUID id, @AuthenticationPrincipal UserPrincipal user) {
+        itemService.deleteItem(id, user);
+    }
+
 }
