@@ -4,6 +4,8 @@ import com.notes_api.Role;
 import com.notes_api.entity.CustomRevisionEntity;
 import com.notes_api.entity.Item;
 import com.notes_api.entity.User;
+import com.notes_api.item.get.GetItemsResponse;
+import com.notes_api.item.get.ItemResponse;
 import com.notes_api.item.history.ItemHistory;
 import com.notes_api.item.history.ItemHistoryResponse;
 import com.notes_api.item.patch.PatchItemRequest;
@@ -71,6 +73,32 @@ public class ItemService {
     }
 
     @Transactional
+    public GetItemsResponse getItems(UserPrincipal userPrincipal) {
+
+        List<ItemResponse> items = itemRepository.findAllByOwnerOrPermissions(
+                userPrincipal.getId(), List.of(Role.EDITOR, Role.VIEWER))
+                .stream()
+                .map(item -> ItemResponse.builder()
+                        .id(item.getOwner().getId())
+                        .title(item.getTitle())
+                        .content(item.getContent())
+                        .version(item.getVersion())
+                        .ownerId(item.getOwner().getId())
+                        .myRole(item.getOwner().getId().equals(userPrincipal.getId()) ?
+                                Role.OWNER.name() :
+                                item.getPermissions().stream().filter(
+                                        p-> p.getUser().getId().equals(userPrincipal.getId()))
+                                        .findFirst().orElseThrow().toString())
+                        .updatedAt(dateTime.toLocalDateTime(item.getUpdatedAt()))
+                        .build()) .toList();
+
+        return GetItemsResponse.builder()
+                .list(items)
+                .build();
+
+    }
+
+    @Transactional
     public PatchItemResponse patchItem(UUID id, PatchItemRequest request, UserPrincipal userPrincipal) {
 
         User user = User
@@ -111,6 +139,7 @@ public class ItemService {
 
     }
 
+    @Transactional
     public ItemHistoryResponse getItemHistory(UUID itemId, UserPrincipal user) {
 
         Item currentItem = itemRepository.findById(itemId)
