@@ -1,12 +1,16 @@
 package com.notes_api.user.register.datetime;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public interface DateTime {
 
-    LocalDate getDate();
+    Instant getInstant();
 
     LocalDateTime getDateTime();
+
+    LocalDateTime toLocalDateTime(Instant instant);
+
+    LocalDateTime toLocalDateTime(long timestamp);
 
 }
