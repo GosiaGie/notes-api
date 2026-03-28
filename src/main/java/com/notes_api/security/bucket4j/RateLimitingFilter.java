@@ -28,7 +28,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        if ("/auth/login".equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod())) {
+        if ("/login".equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod())) {
             String ip = request.getRemoteAddr();
             Bucket bucket = buckets.computeIfAbsent(ip, b -> {
                 Bandwidth limit = Bandwidth.builder()
