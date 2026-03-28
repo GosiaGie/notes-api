@@ -1,6 +1,7 @@
 package com.notes_api.controller;
 
 import com.notes_api.item.ItemService;
+import com.notes_api.item.get.GetItemsResponse;
 import com.notes_api.item.history.ItemHistoryResponse;
 import com.notes_api.item.patch.PatchItemRequest;
 import com.notes_api.item.patch.PatchItemResponse;
@@ -31,6 +32,14 @@ public class ItemController {
                                      @AuthenticationPrincipal UserPrincipal user) {
 
         return itemService.postItem(request, user);
+
+    }
+
+    @GetMapping("/items")
+    @ResponseStatus(HttpStatus.OK)
+    public GetItemsResponse getItems(@AuthenticationPrincipal UserPrincipal user) {
+
+        return itemService.getItems(user);
 
     }
 
