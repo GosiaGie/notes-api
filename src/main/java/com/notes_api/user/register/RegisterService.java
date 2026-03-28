@@ -2,8 +2,8 @@ package com.notes_api.user.register;
 
 import com.notes_api.entity.User;
 import com.notes_api.repository.UserRepository;
-import com.notes_api.user.register.datetime.DateTime;
 import com.notes_api.user.exceptions.AlreadyExistsException;
+import com.notes_api.user.register.datetime.DateTime;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
