@@ -7,7 +7,9 @@ import com.notes_api.entity.User;
 import com.notes_api.item.patch.PatchItemRequest;
 import com.notes_api.item.patch.PatchItemResponse;
 import com.notes_api.item.share.ShareItemRequest;
+import com.notes_api.item.share.ShareItemResponse;
 import com.notes_api.repository.ItemRepository;
+import com.notes_api.repository.UserRepository;
 import com.notes_api.security.UserPrincipal;
 import com.notes_api.user.exceptions.ValidationException;
 import com.notes_api.user.register.datetime.DateTime;
@@ -37,6 +39,9 @@ class ItemServiceTest {
 
     @Mock
     private ItemRepository itemRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @Mock
     private DateTime dateTime;
@@ -271,6 +276,44 @@ class ItemServiceTest {
         verify(itemRepository, times(1)).findById(any(UUID.class));
         verify(itemRepository, times(0)).save(any(Item.class));
         verify(dateTime, times(0)).toLocalDateTime(any(Instant.class));
+    }
+
+    @Test
+    void itemServiceTestShareItemOverridingRole() {
+        when(itemRepository.findById(any(UUID.class))).thenAnswer(item -> {
+            //permission to view already exists
+            ItemPermission permissionToView = ItemPermission.builder()
+                    .user(User.builder().id(VIEWER_ID).build())
+                    .role(Role.VIEWER)
+                    .build();
+            return Optional.of(Item.builder()
+                    .id(ITEM_ID)
+                    .owner(User.builder().id(OWNER_ID).build())
+                    .version(VERSION_1)
+                    .title(OLD_TITLE)
+                    .content(OLD_CONTENT)
+                    .permissions(Set.of(permissionToView))
+                    .build());
+        });
+        when(userRepository.findById(any(UUID.class))).thenReturn(Optional.of(
+                User.builder().id(VIEWER_ID).build()));
+        when(dateTime.getDateTime()).thenReturn(DATE_TIME);
+
+        UserPrincipal userPrincipal = UserPrincipal.builder().id(OWNER_ID).build();
+        ShareItemRequest request = ShareItemRequest.builder()
+                .userId(VIEWER_ID) //ownerId = userId from request
+                .role(Role.EDITOR)
+                .build();
+
+        ShareItemResponse response = itemService.shareItem(ITEM_ID, request, userPrincipal);
+
+        assertEquals(ITEM_ID, response.getItemID());
+        assertEquals(VIEWER_ID, response.getUserID()); //userId in response = viewer who got permission to edit
+        assertEquals(Role.EDITOR.name(), response.getRole()); //role changed to EDITOR
+        assertEquals(DATE_TIME, response.getGrantedAt());
+
+        verify(itemRepository, times(1)).findById(any(UUID.class));
+        verify(dateTime, times(1)).getDateTime();
     }
 
 }
