@@ -6,8 +6,10 @@ import com.notes_api.entity.ItemPermission;
 import com.notes_api.entity.User;
 import com.notes_api.item.patch.PatchItemRequest;
 import com.notes_api.item.patch.PatchItemResponse;
+import com.notes_api.item.share.ShareItemRequest;
 import com.notes_api.repository.ItemRepository;
 import com.notes_api.security.UserPrincipal;
+import com.notes_api.user.exceptions.ValidationException;
 import com.notes_api.user.register.datetime.DateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -237,6 +239,35 @@ class ItemServiceTest {
             assertEquals(ObjectOptimisticLockingFailureException.class, e.getClass());
         }
 
+        verify(itemRepository, times(1)).findById(any(UUID.class));
+        verify(itemRepository, times(0)).save(any(Item.class));
+        verify(dateTime, times(0)).toLocalDateTime(any(Instant.class));
+    }
+
+    @Test
+    void itemServiceTestShareItemToOwner() {
+        //request trying to share Item to its owner
+        when(itemRepository.findById(any(UUID.class))).thenReturn(Optional.of(
+                Item.builder()
+                        .id(ITEM_ID)
+                        .owner(User.builder().id(OWNER_ID).build()) //user from request is owner
+                        .version(VERSION_1)
+                        .title(OLD_TITLE)
+                        .build()));
+
+        UserPrincipal userPrincipal = UserPrincipal.builder().id(OWNER_ID).build();
+
+        ShareItemRequest request = ShareItemRequest.builder()
+                .userId(OWNER_ID) //ownerId = userId from request
+                .role(Role.EDITOR)
+                .build();
+
+        try {
+            itemService.shareItem(ITEM_ID, request, userPrincipal);
+            fail();
+        } catch (ValidationException e) {
+            assertEquals(ValidationException.class, e.getClass());
+        }
         verify(itemRepository, times(1)).findById(any(UUID.class));
         verify(itemRepository, times(0)).save(any(Item.class));
         verify(dateTime, times(0)).toLocalDateTime(any(Instant.class));
