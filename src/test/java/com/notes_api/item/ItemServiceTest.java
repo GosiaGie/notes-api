@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.Instant;
@@ -52,7 +53,9 @@ class ItemServiceTest {
     private static final String NEW_CONTENT = "some new content";
     private static final LocalDateTime DATE_TIME = LocalDateTime.of(2026, Month.JANUARY,1,0,0);
     private static final Long VERSION_1 = 1L;
+    private static final Long VERSION_2 = 2L;
 
+    //permissions tests
     @Test
     void patchItemTestOwner() {
         when(itemRepository.findById(any(UUID.class))).thenReturn(Optional.of(
@@ -195,8 +198,8 @@ class ItemServiceTest {
 
         UserPrincipal userPrincipal = UserPrincipal.builder().id(RANDOM_ID).build();
         PatchItemRequest request = PatchItemRequest.builder()
-                .version(1L)
-                .title(NEW_TITLE) //change in 'content'
+                .version(VERSION_1)
+                .title(NEW_TITLE) //change in 'title'
                 .build();
 
         try {
@@ -204,6 +207,34 @@ class ItemServiceTest {
             fail();
         } catch (AccessDeniedException e) {
             assertEquals(AccessDeniedException.class, e.getClass());
+        }
+
+        verify(itemRepository, times(1)).findById(any(UUID.class));
+        verify(itemRepository, times(0)).save(any(Item.class));
+        verify(dateTime, times(0)).toLocalDateTime(any(Instant.class));
+    }
+
+    //version conflict test
+    @Test
+    void setItemServiceTestVersionConflict() {
+        when(itemRepository.findById(any(UUID.class))).thenReturn(Optional.of(
+                Item.builder()
+                        .owner(User.builder().id(OWNER_ID).build()) //user from request is owner
+                        .version(VERSION_2) //new version form db
+                        .title(OLD_TITLE)
+                        .build()));
+
+        UserPrincipal userPrincipal = UserPrincipal.builder().id(OWNER_ID).build();
+        PatchItemRequest request = PatchItemRequest.builder()
+                .version(VERSION_1) //old version from client
+                .title(NEW_TITLE) //change in 'content'
+                .build();
+
+        try {
+            itemService.patchItem(ITEM_ID, request, userPrincipal);
+            fail();
+        } catch (ObjectOptimisticLockingFailureException e) {
+            assertEquals(ObjectOptimisticLockingFailureException.class, e.getClass());
         }
 
         verify(itemRepository, times(1)).findById(any(UUID.class));
