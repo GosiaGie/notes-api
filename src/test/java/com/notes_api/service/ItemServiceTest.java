@@ -1,9 +1,10 @@
-package com.notes_api.item;
+package com.notes_api.service;
 
 import com.notes_api.Role;
 import com.notes_api.entity.Item;
 import com.notes_api.entity.ItemPermission;
 import com.notes_api.entity.User;
+import com.notes_api.item.ItemService;
 import com.notes_api.item.patch.PatchItemRequest;
 import com.notes_api.item.patch.PatchItemResponse;
 import com.notes_api.item.share.ShareItemRequest;
@@ -37,18 +38,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
 
-    @Mock
-    private ItemRepository itemRepository;
-
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private DateTime dateTime;
-
-    @InjectMocks
-    private ItemService itemService;
-
     private static final UUID OWNER_ID = UUID.fromString("f353ca91-4fc5-49f2-9b9e-304f83d11914");
     private static final UUID EDITOR_ID = UUID.fromString("e942bbe9-afdc-4c62-a438-4034870f7d54");
     private static final UUID VIEWER_ID = UUID.fromString("2d9a6907-791e-450f-a39c-85a219808169");
@@ -61,6 +50,18 @@ class ItemServiceTest {
     private static final LocalDateTime DATE_TIME = LocalDateTime.of(2026, Month.JANUARY,1,0,0);
     private static final Long VERSION_1 = 1L;
     private static final Long VERSION_2 = 2L;
+
+    @Mock
+    private ItemRepository itemRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private DateTime dateTime;
+
+    @InjectMocks
+    private ItemService itemService;
 
     //permissions tests
     @Test
