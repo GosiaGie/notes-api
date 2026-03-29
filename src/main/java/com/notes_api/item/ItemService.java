@@ -23,7 +23,6 @@ import com.notes_api.user.register.datetime.DateTime;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import org.apache.coyote.BadRequestException;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
@@ -152,15 +151,15 @@ public class ItemService {
                 .filter(i -> !i.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("item not found"));
 
+        if (item.getOwner().getId().equals(request.getUserId())) {
+            throw new ValidationException("you are owner of this item");
+        }
+
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("user not found"));
 
         if (!item.getOwner().getId().equals(userPrincipal.getId())) {
             throw new AccessDeniedException("you don't have access to share this note");
-        }
-
-        if (item.getOwner().getId().equals(request.getUserId())) {
-            throw new ValidationException("you are owner of this item");
         }
 
         Optional<ItemPermission> currentPermission = item.getPermissions().stream()
