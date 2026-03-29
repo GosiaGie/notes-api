@@ -178,6 +178,8 @@ public class ItemService {
         return ShareItemResponse.builder()
                 .itemID(item.getId())
                 .userID(user.getId())
+                .role(request.getRole().name())
+                .grantedAt(dateTime.getDateTime())
                 .build();
     }
 
