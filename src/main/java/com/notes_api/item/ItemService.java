@@ -89,7 +89,7 @@ public class ItemService {
                 userPrincipal.getId(), List.of(Role.EDITOR, Role.VIEWER))
                 .stream()
                 .map(item -> ItemResponse.builder()
-                        .id(item.getOwner().getId())
+                        .id(item.getId())
                         .title(item.getTitle())
                         .content(item.getContent())
                         .version(item.getVersion())
