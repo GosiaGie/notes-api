@@ -3,6 +3,7 @@ package com.notes_api.item;
 import com.notes_api.Role;
 import com.notes_api.entity.CustomRevisionEntity;
 import com.notes_api.entity.Item;
+import com.notes_api.entity.ItemPermission;
 import com.notes_api.entity.User;
 import com.notes_api.item.get.GetItemsResponse;
 import com.notes_api.item.get.ItemResponse;
@@ -12,12 +13,17 @@ import com.notes_api.item.patch.PatchItemRequest;
 import com.notes_api.item.patch.PatchItemResponse;
 import com.notes_api.item.post.PostItemRequest;
 import com.notes_api.item.post.PostItemResponse;
+import com.notes_api.item.share.ShareItemRequest;
+import com.notes_api.item.share.ShareItemResponse;
 import com.notes_api.repository.ItemRepository;
+import com.notes_api.repository.UserRepository;
 import com.notes_api.security.UserPrincipal;
+import com.notes_api.user.exceptions.ValidationException;
 import com.notes_api.user.register.datetime.DateTime;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.apache.coyote.BadRequestException;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
@@ -28,6 +34,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -36,12 +43,15 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final DateTime dateTime;
     private final EntityManager entityManager;
+    private final UserRepository userRepository;
 
     @Autowired
-    public ItemService(ItemRepository itemRepository, DateTime dateTime, EntityManager entityManager) {
+    public ItemService(ItemRepository itemRepository, DateTime dateTime, EntityManager entityManager,
+                       UserRepository userRepository) {
         this.itemRepository = itemRepository;
         this.dateTime = dateTime;
         this.entityManager = entityManager;
+        this.userRepository = userRepository;
     }
 
 
@@ -132,6 +142,43 @@ public class ItemService {
                 .updatedAt(dateTime.toLocalDateTime(updatedItem.getUpdatedAt()))
                 .build();
 
+    }
+
+    @Transactional
+    public ShareItemResponse shareItem(UUID itemId, ShareItemRequest request, UserPrincipal userPrincipal) {
+
+        Item item = itemRepository.findById(itemId)
+                .filter(i -> !i.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("item not found"));
+
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("user not found"));
+
+        if (!item.getOwner().getId().equals(userPrincipal.getId())) {
+            throw new AccessDeniedException("you don't have access to share this note");
+        }
+
+        if (item.getOwner().getId().equals(request.getUserId())) {
+            throw new ValidationException("you are owner of this item");
+        }
+
+        Optional<ItemPermission> currentPermission = item.getPermissions().stream()
+                .filter(p -> p.getUser().getId().equals(request.getUserId()))
+                .findFirst();
+
+        if (currentPermission.isEmpty()) {
+            item.getPermissions().add(ItemPermission.builder()
+                    .user(user)
+                    .role(request.getRole())
+                    .build());
+        } else {
+            currentPermission.get().setRole(request.getRole());
+        }
+
+        return ShareItemResponse.builder()
+                .itemID(item.getId())
+                .userID(user.getId())
+                .build();
     }
 
     @Transactional

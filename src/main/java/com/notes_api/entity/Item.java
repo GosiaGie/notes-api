@@ -57,7 +57,7 @@ public class Item {
     private Instant updatedAt;
 
     @NotAudited
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "note", cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ItemPermission> permissions;
 
 }

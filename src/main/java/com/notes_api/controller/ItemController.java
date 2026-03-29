@@ -7,6 +7,8 @@ import com.notes_api.item.patch.PatchItemRequest;
 import com.notes_api.item.patch.PatchItemResponse;
 import com.notes_api.item.post.PostItemRequest;
 import com.notes_api.item.post.PostItemResponse;
+import com.notes_api.item.share.ShareItemRequest;
+import com.notes_api.item.share.ShareItemResponse;
 import com.notes_api.security.UserPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +61,17 @@ public class ItemController {
 
     @DeleteMapping("/items/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id, @AuthenticationPrincipal UserPrincipal user) {
+    public void deleteItem(@PathVariable UUID id, @AuthenticationPrincipal UserPrincipal user) {
         itemService.deleteItem(id, user);
+    }
+
+    @PostMapping("/items/{id}/share")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ShareItemResponse shareItem(@PathVariable UUID id, @Valid @RequestBody ShareItemRequest request,
+                                       @AuthenticationPrincipal UserPrincipal user) {
+
+        return itemService.shareItem(id, request, user);
+
     }
 
 }
