@@ -2,7 +2,6 @@ package com.notes_api.security.jtw;
 
 import com.notes_api.security.UserPrincipalAuthenticationToken;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
 import java.util.Optional;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -26,15 +24,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        extractTokenFromRequestHeader(request)
-                .map(jwtDecoder::decode)
-                .map(jwtToPrincipalConverter::convert)
-                .map(UserPrincipalAuthenticationToken::new)
-                .ifPresent(userPrincipalAuthenticationToken ->
-                        SecurityContextHolder.getContext().setAuthentication(userPrincipalAuthenticationToken));
-
-        filterChain.doFilter(request, response);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
+        try {
+            extractTokenFromRequestHeader(request)
+                    .map(jwtDecoder::decode)
+                    .map(jwtToPrincipalConverter::convert)
+                    .map(UserPrincipalAuthenticationToken::new)
+                    .ifPresent(userPrincipalAuthenticationToken ->
+                            SecurityContextHolder.getContext().setAuthentication(userPrincipalAuthenticationToken));
+            filterChain.doFilter(request, response);
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        }
     }
 
     private Optional<String> extractTokenFromRequestHeader(HttpServletRequest request){
