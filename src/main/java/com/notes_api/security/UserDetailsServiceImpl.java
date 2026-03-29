@@ -1,5 +1,6 @@
 package com.notes_api.security;
 
+import com.notes_api.entity.User;
 import com.notes_api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,7 +24,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        var user = userRepository.findByLogin(username).orElseThrow();
+        User user = userRepository.findByLogin(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         return UserPrincipal.builder()
                 .id(user.getId())
