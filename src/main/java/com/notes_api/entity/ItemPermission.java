@@ -2,9 +2,7 @@ package com.notes_api.entity;
 
 import com.notes_api.Role;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -13,6 +11,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ItemPermission {
 
     @Id
@@ -22,7 +22,7 @@ public class ItemPermission {
 
     @ManyToOne
     @JoinColumn(name = "item_id")
-    private Item note;
+    private Item item;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -31,5 +31,18 @@ public class ItemPermission {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", columnDefinition = "ENUM('VIEWER', 'EDITOR')")
     private Role role;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item itemToEquals = (Item) o;
+        return id != null && id.equals(itemToEquals.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode(); // Stały hashCode dla danej klasy (standard Hibernate dla encji)
+    }
 
 }
