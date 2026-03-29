@@ -4,6 +4,7 @@ import com.notes_api.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -36,8 +37,9 @@ public class ItemPermission {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Item itemToEquals = (Item) o;
-        return id != null && id.equals(itemToEquals.getId());
+        ItemPermission that = (ItemPermission) o;
+        return Objects.equals(id, that.id) && Objects.equals(item, that.item) && Objects.equals(user, that.user)
+                && role == that.role;
     }
 
     @Override
