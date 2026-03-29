@@ -34,6 +34,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -193,6 +194,30 @@ public class ItemService {
         }
 
         item.setDeleted(true);
+    }
+
+    @Transactional
+    public void deletePermission(UUID itemId, UUID userId, UserPrincipal userPrincipal) {
+
+        Item item = itemRepository.findById(itemId)
+                .filter(i -> !i.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("item not found"));
+
+        if (!item.getOwner().getId().equals(userPrincipal.getId())) {
+            throw new AccessDeniedException("you don't have access to delete this permission");
+        }
+
+        userRepository.getOrThrow(userId);
+
+
+        boolean hasPermissions = item.getPermissions().stream()
+                .anyMatch(p -> Objects.equals(p.getUser().getId(), userPrincipal.getId()));
+
+        if (!hasPermissions) {
+            throw new EntityNotFoundException("permission for this user not found"); //permission for this user is not found
+        }
+
+        item.getPermissions().removeIf(p -> p.getUser().getId().equals(userId));
     }
 
     @Transactional

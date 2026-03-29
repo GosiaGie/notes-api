@@ -74,4 +74,14 @@ public class ItemController {
 
     }
 
+    @DeleteMapping("/items/{id}/share{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePermission(@PathVariable UUID id, @PathVariable UUID userId,
+                                 @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+
+        itemService.deletePermission(id, userId, userPrincipal);
+
+    }
+
 }
