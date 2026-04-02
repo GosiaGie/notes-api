@@ -14,6 +14,7 @@ import com.notes_api.repository.UserRepository;
 import com.notes_api.security.UserPrincipal;
 import com.notes_api.user.exceptions.ValidationException;
 import com.notes_api.user.register.datetime.DateTime;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -60,31 +61,36 @@ class ItemServiceTest {
     @Mock
     private DateTime dateTime;
 
+    @Mock
+    private EntityManager entityManager;
+
     @InjectMocks
     private ItemService itemService;
 
     //permissions tests
     @Test
     void patchItemTestOwner() {
+        when(dateTime.toLocalDateTime(any(Instant.class))).thenReturn(DATE_TIME);
+
         when(itemRepository.findById(any(UUID.class))).thenReturn(Optional.of(
                 Item.builder()
+                        .id(ITEM_ID)
                         .owner(User.builder().id(OWNER_ID).build()) //user from request is owner
                         .version(VERSION_1)
                         .title(OLD_TITLE)
+                        .content(OLD_CONTENT)
                         .build()));
-        when(itemRepository.save(any(Item.class))).thenReturn(Item.builder()
-                .id(ITEM_ID)
-                .title(NEW_TITLE)
-                .content(OLD_CONTENT)
-                .updatedAt(DATE_TIME.toInstant(ZoneOffset.UTC))
-                .version(VERSION_1)
-                .build());
-        when(dateTime.toLocalDateTime(any(Instant.class))).thenReturn(DATE_TIME);
+
+        doAnswer(invocation -> {
+            Item item = invocation.getArgument(0);
+            item.setUpdatedAt(DATE_TIME.toInstant(ZoneOffset.UTC));
+            return item;
+        }).when(itemRepository).save(any(Item.class));
 
         UserPrincipal userPrincipal = UserPrincipal.builder().id(OWNER_ID).build();
         PatchItemRequest request = PatchItemRequest.builder()
                 .version(1L)
-                .title(NEW_TITLE) //change in 'title'
+                .title(NEW_TITLE) //change only in 'title'
                 .build();
 
         PatchItemResponse response = itemService.patchItem(ITEM_ID, request, userPrincipal);
@@ -102,6 +108,8 @@ class ItemServiceTest {
 
     @Test
     void patchItemTestEditor() {
+        when(dateTime.toLocalDateTime(any(Instant.class))).thenReturn(DATE_TIME);
+
         //user from request is not owner, but has permission do edit, this case is editing 'content'
         when(itemRepository.findById(any(UUID.class))).thenAnswer(item -> {
             //permission to edit
@@ -110,6 +118,7 @@ class ItemServiceTest {
                     .role(Role.EDITOR)
                     .build();
             return Optional.of(Item.builder()
+                    .id(ITEM_ID)
                     .owner(User.builder().id(OWNER_ID).build()) //user from request is NOT owner
                     .version(VERSION_1)
                     .title(OLD_TITLE)
@@ -118,14 +127,12 @@ class ItemServiceTest {
                     .build());
         });
 
-        when(itemRepository.save(any(Item.class))).thenReturn(Item.builder()
-                .id(ITEM_ID)
-                .title(OLD_TITLE)
-                .content(NEW_CONTENT)
-                .updatedAt(DATE_TIME.toInstant(ZoneOffset.UTC))
-                .version(VERSION_1)
-                .build());
-        when(dateTime.toLocalDateTime(any(Instant.class))).thenReturn(DATE_TIME);
+
+        doAnswer(invocation -> {
+            Item item = invocation.getArgument(0);
+            item.setUpdatedAt(DATE_TIME.toInstant(ZoneOffset.UTC));
+            return item;
+        }).when(itemRepository).save(any(Item.class));
 
         UserPrincipal userPrincipal = UserPrincipal.builder().id(EDITOR_ID).build();
         PatchItemRequest request = PatchItemRequest.builder()

@@ -127,8 +127,8 @@ public class ItemService {
             throw new ObjectOptimisticLockingFailureException(Item.class, id);
         }
 
-        item.setTitle(request.getTitle());
-        item.setContent(request.getContent());
+        Optional.ofNullable(request.getTitle()).ifPresent(item::setTitle);
+        Optional.ofNullable(request.getContent()).ifPresent(item::setContent);
 
         itemRepository.save(item);
         entityManager.flush();
