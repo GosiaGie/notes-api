@@ -1,6 +1,6 @@
 package com.notes_api.service;
 
-import com.notes_api.Role;
+import com.notes_api.security.Role;
 import com.notes_api.entity.Item;
 import com.notes_api.entity.ItemPermission;
 import com.notes_api.entity.User;
@@ -136,7 +136,7 @@ class ItemServiceTest {
 
         UserPrincipal userPrincipal = UserPrincipal.builder().id(EDITOR_ID).build();
         PatchItemRequest request = PatchItemRequest.builder()
-                .version(1L)
+                .version(VERSION_1)
                 .content(NEW_CONTENT) //change in 'content'
                 .build();
 

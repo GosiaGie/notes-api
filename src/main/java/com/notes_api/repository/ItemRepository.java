@@ -1,6 +1,6 @@
 package com.notes_api.repository;
 
-import com.notes_api.Role;
+import com.notes_api.security.Role;
 import com.notes_api.entity.Item;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

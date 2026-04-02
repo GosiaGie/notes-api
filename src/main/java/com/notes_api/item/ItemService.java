@@ -1,6 +1,6 @@
 package com.notes_api.item;
 
-import com.notes_api.Role;
+import com.notes_api.security.Role;
 import com.notes_api.entity.CustomRevisionEntity;
 import com.notes_api.entity.Item;
 import com.notes_api.entity.ItemPermission;

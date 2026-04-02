@@ -1,6 +1,6 @@
 package com.notes_api.entity;
 
-import com.notes_api.Role;
+import com.notes_api.security.Role;
 import jakarta.persistence.*;
 import lombok.*;
 

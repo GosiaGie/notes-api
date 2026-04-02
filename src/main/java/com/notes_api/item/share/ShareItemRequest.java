@@ -1,6 +1,6 @@
 package com.notes_api.item.share;
 
-import com.notes_api.Role;
+import com.notes_api.security.Role;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
