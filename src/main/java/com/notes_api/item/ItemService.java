@@ -8,7 +8,6 @@ import com.notes_api.entity.User;
 import com.notes_api.item.get.GetItemsResponse;
 import com.notes_api.item.get.ItemResponse;
 import com.notes_api.item.history.ItemHistory;
-import com.notes_api.item.history.ItemHistoryResponse;
 import com.notes_api.item.patch.PatchItemRequest;
 import com.notes_api.item.patch.PatchItemResponse;
 import com.notes_api.item.post.PostItemRequest;
@@ -40,6 +39,8 @@ import java.util.UUID;
 @Service
 public class ItemService {
 
+    private static final String ITEM_NOT_FOUND_MSG = "item not found";
+
     private final ItemRepository itemRepository;
     private final DateTime dateTime;
     private final EntityManager entityManager;
@@ -58,10 +59,8 @@ public class ItemService {
     @Transactional
     public PostItemResponse postItem(PostItemRequest request, UserPrincipal userPrincipal) {
 
-        User user = User
-                .builder()
-                .id(userPrincipal.getId())
-                .build();
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found in DB"));
 
         Item savedItem = itemRepository.save(Item.builder()
                 .title(request.getTitle())
@@ -113,7 +112,7 @@ public class ItemService {
 
         Item item = itemRepository.findById(id)
                 .filter(i -> !i.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("item not found"));
+                .orElseThrow(() -> new EntityNotFoundException(ITEM_NOT_FOUND_MSG));
 
         if (!item.getOwner().getId().equals(userPrincipal.getId())) {
             boolean hasEditorRole = item.getPermissions().stream()
@@ -130,16 +129,16 @@ public class ItemService {
 
         item.setTitle(request.getTitle());
         item.setContent(request.getContent());
-        item.setVersion(request.getVersion());
 
-        Item updatedItem = itemRepository.save(item);
+        itemRepository.save(item);
+        entityManager.flush();
 
         return PatchItemResponse.builder()
-                .id(updatedItem.getId())
-                .title(updatedItem.getTitle())
-                .content(updatedItem.getContent())
-                .version(updatedItem.getVersion())
-                .updatedAt(dateTime.toLocalDateTime(updatedItem.getUpdatedAt()))
+                .id(item.getId())
+                .title(item.getTitle())
+                .content(item.getContent())
+                .version(item.getVersion())
+                .updatedAt(dateTime.toLocalDateTime(item.getUpdatedAt()))
                 .build();
 
     }
@@ -149,7 +148,7 @@ public class ItemService {
 
         Item item = itemRepository.findById(itemId)
                 .filter(i -> !i.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("item not found"));
+                .orElseThrow(() -> new EntityNotFoundException(ITEM_NOT_FOUND_MSG));
 
         if (item.getOwner().getId().equals(request.getUserId())) {
             throw new ValidationException("you are owner of this item");
@@ -188,7 +187,7 @@ public class ItemService {
 
         Item item = itemRepository.findById(itemId)
                 .filter(i -> !i.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("item not found"));
+                .orElseThrow(() -> new EntityNotFoundException(ITEM_NOT_FOUND_MSG));
 
         if (!item.getOwner().getId().equals(userPrincipal.getId())) {
             throw new AccessDeniedException("you don't have access to delete this note");
@@ -202,7 +201,7 @@ public class ItemService {
 
         Item item = itemRepository.findById(itemId)
                 .filter(i -> !i.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("item not found"));
+                .orElseThrow(() -> new EntityNotFoundException(ITEM_NOT_FOUND_MSG));
 
         if (!item.getOwner().getId().equals(userPrincipal.getId())) {
             throw new AccessDeniedException("you don't have access to delete this permission");
@@ -222,11 +221,11 @@ public class ItemService {
     }
 
     @Transactional
-    public ItemHistoryResponse getItemHistory(UUID itemId, UserPrincipal user) {
+    public List<ItemHistory> getItemHistory(UUID itemId, UserPrincipal user) {
 
         Item currentItem = itemRepository.findById(itemId)
                 .filter(i -> !i.isDeleted())
-                .orElseThrow(() -> new EntityNotFoundException("item not found"));
+                .orElseThrow(() -> new EntityNotFoundException(ITEM_NOT_FOUND_MSG));
 
         if (!hasAccess(currentItem, user)) {
             throw new AccessDeniedException("you don't have access to this note");
@@ -238,7 +237,7 @@ public class ItemService {
                 .add(AuditEntity.id().eq(itemId))
                 .getResultList();
 
-        List<ItemHistory> history = results.stream().map(row -> {
+        return results.stream().map(row -> {
             Item item = (Item) row[0];
             CustomRevisionEntity revision = (CustomRevisionEntity) row[1];
             RevisionType type = (RevisionType) row[2];
@@ -249,13 +248,9 @@ public class ItemService {
                     .timestamp(dateTime.toLocalDateTime(revision.getTimestamp()))
                     .changedBy(revision.getChangedBy())
                     .title(item.getTitle())
-                    .content(item.getTitle())
+                    .content(item.getContent())
                     .build();
         }).toList();
-
-        return ItemHistoryResponse.builder()
-                .history(history)
-                .build();
     }
 
     private boolean hasAccess(Item item, UserPrincipal user) {
