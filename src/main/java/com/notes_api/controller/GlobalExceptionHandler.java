@@ -17,6 +17,8 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final String ERROR = "error";
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
@@ -35,7 +37,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", exception.getMessage()));
+                .body(Map.of(ERROR, exception.getMessage()));
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -43,7 +45,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", exception.getMessage()));
+                .body(Map.of(ERROR, exception.getMessage()));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
@@ -51,14 +53,14 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", exception.getMessage()));
+                .body(Map.of(ERROR, exception.getMessage()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String>> accessDeniedException(AccessDeniedException exception) {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body(Map.of("error", exception.getMessage()));
+                .body(Map.of(ERROR, exception.getMessage()));
 
     }
 
@@ -67,7 +69,7 @@ public class GlobalExceptionHandler {
             ObjectOptimisticLockingFailureException exception) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", exception.getMessage()));
+                .body(Map.of(ERROR, exception.getMessage()));
     }
 
 }
