@@ -17,9 +17,9 @@ public class UserRevisionListener implements RevisionListener {
             String username = user.getUsername();
             if (StringUtils.hasText(username)) {
                 revisionEntity.setChangedBy(username);
-                return;
             }
+        } else {
+            revisionEntity.setChangedBy("ANONYMOUS");
         }
-        throw new IllegalStateException("Error - missing info about user");
     }
 }
