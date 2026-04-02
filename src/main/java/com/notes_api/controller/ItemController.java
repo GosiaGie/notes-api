@@ -2,7 +2,7 @@ package com.notes_api.controller;
 
 import com.notes_api.item.ItemService;
 import com.notes_api.item.get.GetItemsResponse;
-import com.notes_api.item.history.ItemHistoryResponse;
+import com.notes_api.item.history.ItemHistory;
 import com.notes_api.item.patch.PatchItemRequest;
 import com.notes_api.item.patch.PatchItemResponse;
 import com.notes_api.item.post.PostItemRequest;
@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -55,7 +56,7 @@ public class ItemController {
 
     @GetMapping("/items/{id}/history")
     @ResponseStatus(HttpStatus.OK)
-    public ItemHistoryResponse history(@PathVariable UUID id, @AuthenticationPrincipal UserPrincipal user) {
+    public List<ItemHistory> history(@PathVariable UUID id, @AuthenticationPrincipal UserPrincipal user) {
         return itemService.getItemHistory(id, user);
     }
 
