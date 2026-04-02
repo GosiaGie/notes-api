@@ -2,10 +2,7 @@ package com.notes_api.security;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -16,6 +13,7 @@ import java.util.UUID;
 @Setter
 @Builder
 @ToString
+@AllArgsConstructor
 public class UserPrincipal implements UserDetails {
 
     private final UUID id;
