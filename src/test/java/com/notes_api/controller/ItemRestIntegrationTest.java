@@ -97,7 +97,6 @@ class ItemRestIntegrationTest {
         mySQLContainer.stop();
     }
 
- //   @AutoConfigureMockMvc
     @Test
     void tooManyLoginRequests() throws Exception {
         String requestJson = "{\"login\": \"wrong login\", \"password\": \"wrong password\"}";
